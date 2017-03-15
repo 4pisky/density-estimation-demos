@@ -1,19 +1,19 @@
-import numpy as np
-import scipy.linalg
-import pandas as pd
-import attr.validators
-from copy import deepcopy
-from attr import attrs, attrib
-
 import logging
+from copy import deepcopy
+
+import numpy as np
+import pandas as pd
+import scipy.linalg
+from attr import attrib, attrs
 
 logger = logging.getLogger(__name__)
+
 
 def _to_dataframe_of_float(df_like):
     """
     Ensures float datatype and a deepcopy.
     """
-    return pd.DataFrame(df_like,dtype=np.float_, copy=True)
+    return pd.DataFrame(df_like, dtype=np.float_, copy=True)
 
 
 @attrs(frozen=True)
@@ -98,6 +98,7 @@ class MvGauss:
 
         """
         return self.pars.T.sigma
+
 
 def build_covariance_matrix(sigmas, correlations):
     """
