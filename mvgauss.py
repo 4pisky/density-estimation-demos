@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import scipy.linalg
 from attr import attrib, attrs
+from scipy.stats import multivariate_normal
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +30,6 @@ class MvGauss:
         pars (pandas.Dataframe): Dataframe with ``index=('mu','sigma')``,
             containing one series for each variable.
         cov (pandas.Dataframe): Labelled covariance matrix.
-        corr ((pandas.Dataframe): (Property) Labelled correlation matrix.
     """
 
     pars = attrib(convert=_to_dataframe_of_float)
@@ -89,6 +89,15 @@ class MvGauss:
         return self.pars.T.mu
 
     @property
+    def dist(self):
+        """
+        Fetch a scipy.stats.multivariate_normal distribution
+
+        (initialised to repreresent this Gaussian)
+        """
+        return multivariate_normal(mean=self.pars.T.mu, cov=self.cov)
+
+    @property
     def sigma(self):
         """
         Fetch the series of parameter sigmas (std. dev.).
@@ -98,6 +107,20 @@ class MvGauss:
 
         """
         return self.pars.T.sigma
+
+    def _repr_html_(self):
+
+        caption_pars = self.pars.style.set_caption('Params')
+        caption_cov = self.cov.style.set_caption('Covariance')
+        return """
+            <style> div.output_area .rendered_html table {{float:left; margin-right:10px; }}</style>
+            <p>
+            {pars}
+            {cov}
+            </p>
+            """.format(
+            pars=caption_pars.render(),
+            cov=caption_cov.render())
 
 
 def build_covariance_matrix(sigmas, correlations):
