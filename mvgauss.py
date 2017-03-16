@@ -110,17 +110,21 @@ class MvGauss:
 
     def _repr_html_(self):
 
-        caption_pars = self.pars.style.set_caption('Params')
+        caption_pars = self.pars.style.set_caption('Parameters')
         caption_cov = self.cov.style.set_caption('Covariance')
+        caption_corr = self.corr.style.set_caption('Correlation')
         return """
             <style> div.output_area .rendered_html table {{float:left; margin-right:10px; }}</style>
             <p>
             {pars}
             {cov}
+            {corr}
             </p>
             """.format(
             pars=caption_pars.render(),
-            cov=caption_cov.render())
+            cov=caption_cov.render(),
+            corr=caption_corr.render()
+        )
 
 
 def build_covariance_matrix(sigmas, correlations):
@@ -141,8 +145,8 @@ def build_covariance_matrix(sigmas, correlations):
                        data=np.diag(sigmas ** 2),
                        dtype=np.float
                        )
-    cov.columns.name = 'ax0'
-    cov.index.name = 'ax1'
+    # cov.columns.name = 'ax0'
+    # cov.index.name = 'ax1'
 
     for param_pair, pair_corr in correlations.items():
         p1, p2 = param_pair
