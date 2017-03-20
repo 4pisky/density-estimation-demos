@@ -78,6 +78,42 @@ class MvGauss:
         return corr
 
     @property
+    def dist(self):
+        """
+        Fetch a scipy.stats.multivariate_normal distribution
+
+        (initialised to repreresent this Gaussian)
+        """
+        return multivariate_normal(mean=self.pars.T.mu, cov=self.cov)
+
+    @property
+    def eig(self):
+        """
+        Fetch the eigenvalues and eigenvectors of the covariance matrix
+        Returns:
+            tuple: eigenvalues (pandas.Series), eigenvectors (pandas.DataFrame)
+        """
+        e_val, e_vec = np.linalg.eig(self.cov)
+
+        e_val = pd.Series(e_val, name="$\lambda$")
+        e_mat = pd.DataFrame(data=e_vec,
+                     index=self.cov.index.copy()
+                    )
+        return e_val, e_mat
+
+    @property
+    def pcv(self):
+        """
+        Fetch the principle component vectors of the Gaussian.
+
+        Returns:
+            pandas.Dataframe
+        """
+        e_val, e_mat = self.eig
+        pca = e_mat.multiply(e_val**0.5)
+        return pca
+
+    @property
     def mu(self):
         """
         Fetch the series of parameter means.
@@ -87,15 +123,6 @@ class MvGauss:
 
         """
         return self.pars.T.mu
-
-    @property
-    def dist(self):
-        """
-        Fetch a scipy.stats.multivariate_normal distribution
-
-        (initialised to repreresent this Gaussian)
-        """
-        return multivariate_normal(mean=self.pars.T.mu, cov=self.cov)
 
     @property
     def sigma(self):
@@ -108,20 +135,32 @@ class MvGauss:
         """
         return self.pars.T.sigma
 
+
     def _repr_html_(self):
 
-        caption_pars = self.pars.style.set_caption('Parameters')
+        caption_pars = self.pars.T.style.set_caption('Parameters')
         caption_cov = self.cov.style.set_caption('Covariance')
         caption_corr = self.corr.style.set_caption('Correlation')
+        pcv = pd.DataFrame(self.pcv,copy=True)
+        # pcv=pcv.T
+        # pcv.insert(0,'$\sigma$', self.eig[0].values**0.5)
+        # pcv=pcv.T
+        pcv.loc['$\sigma$']=self.eig[0].values**0.5
+        caption_pcv = pcv.style.set_caption('PC-vecs')
+
+
+
         return """
             <style> div.output_area .rendered_html table {{float:left; margin-right:10px; }}</style>
             {pars}
             {cov}
             {corr}
+            {pcv}
             """.format(
             pars=caption_pars.render(),
             cov=caption_cov.render(),
-            corr=caption_corr.render()
+            corr=caption_corr.render(),
+            pcv = caption_pcv.render(),
         )
 
 
@@ -138,8 +177,8 @@ def build_covariance_matrix(sigmas, correlations):
         (pandas.DataFrame): Covariance matrix.
     """
     sigmas = pd.Series(sigmas)
-    cov = pd.DataFrame(index=deepcopy(sigmas.index),
-                       columns=deepcopy(sigmas.index),
+    cov = pd.DataFrame(index=sigmas.index.copy(),
+                       columns=sigmas.index.copy(),
                        data=np.diag(sigmas ** 2),
                        dtype=np.float
                        )

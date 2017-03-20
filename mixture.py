@@ -1,4 +1,5 @@
 import numpy as np
+
 from attr import attrib, attrs
 
 
@@ -40,12 +41,23 @@ class Mixture:
                 jpdf += self.weights[idx] * m.dist.pdf(x)
         return jpdf
 
+
+    def joint_sample(self, size):
+        component_sample_sizes = np.random.multinomial(n=size,
+                                                       pvals=self.weights)
+        component_samples = []
+        for idx in range(len(self.models)):
+            sample = self.models[idx].dist.rvs(component_sample_sizes[idx])
+            component_samples.append(sample)
+        return np.vstack(component_samples)
+
+
     def _repr_html_(self):
         output=[]
         for idx, mdl in enumerate(self.models):
             output.append(
                 """
-                <h3>Component {idx}</h3>
+                <h4>Component {idx}</h4>
                 <p>Weight: {weight:0.3f}
                 {model}
                 </p>
