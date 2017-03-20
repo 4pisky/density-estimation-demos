@@ -39,3 +39,18 @@ class Mixture:
             else:
                 jpdf += self.weights[idx] * m.dist.pdf(x)
         return jpdf
+
+    def _repr_html_(self):
+        output=[]
+        for idx, mdl in enumerate(self.models):
+            output.append(
+                """
+                <h3>Component {idx}</h3>
+                <p>Weight: {weight:0.3f}
+                {model}
+                </p>
+                <div style="clear:left;"></div>
+                """.format(idx=idx, weight=self.weights[idx],
+                           model = mdl._repr_html_())
+            )
+        return '\n'.join(output)

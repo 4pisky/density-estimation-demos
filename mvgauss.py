@@ -115,11 +115,9 @@ class MvGauss:
         caption_corr = self.corr.style.set_caption('Correlation')
         return """
             <style> div.output_area .rendered_html table {{float:left; margin-right:10px; }}</style>
-            <p>
             {pars}
             {cov}
             {corr}
-            </p>
             """.format(
             pars=caption_pars.render(),
             cov=caption_cov.render(),
