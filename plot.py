@@ -16,7 +16,6 @@ def plot_2d_contours(f, xlim, ylim,
     values_vec = f(coords_vec)
     # Reshape the output back into a grid:
     values_grid = values_vec.reshape(grid.shape[0],grid.shape[1])
-    print("SHAPE",values_grid.shape)
 
     if ax is None:
         ax = plt.gca()
