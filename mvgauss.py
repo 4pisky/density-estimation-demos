@@ -89,15 +89,20 @@ class MvGauss:
     def eig(self):
         """
         Fetch the eigenvalues and eigenvectors of the covariance matrix
+        
+        The eigenvalues are equivalent to the diagonal values of the 
+        covariance matrix in the frame with co-ordinate axis aligned to 
+        the orientation of the multivariate distribution.
+        
         Returns:
             tuple: eigenvalues (pandas.Series), eigenvectors (pandas.DataFrame)
         """
-        e_val, e_vec = np.linalg.eig(self.cov)
+        e_val, e_vec = np.linalg.eigh(self.cov)
 
         e_val = pd.Series(e_val, name="$\lambda$")
         e_mat = pd.DataFrame(data=e_vec,
-                     index=self.cov.index.copy()
-                    )
+                             index=self.cov.index.copy()
+                             )
         return e_val, e_mat
 
     @property
@@ -109,7 +114,9 @@ class MvGauss:
             pandas.Dataframe
         """
         e_val, e_mat = self.eig
-        pca = e_mat.multiply(e_val**0.5)
+        # e_mat are the unit-vectors.
+        # Multiply them by the std-dev in each direction to get a lengthscale
+        pca = e_mat.multiply(e_val ** 0.5)
         return pca
 
     @property
@@ -134,20 +141,17 @@ class MvGauss:
         """
         return self.pars.T.sigma
 
-
     def _repr_html_(self):
 
         caption_pars = self.pars.T.style.set_caption('Parameters')
         caption_cov = self.cov.style.set_caption('Covariance')
         caption_corr = self.corr.style.set_caption('Correlation')
-        pcv = pd.DataFrame(self.pcv,copy=True)
+        pcv = pd.DataFrame(self.pcv, copy=True)
         # pcv=pcv.T
         # pcv.insert(0,'$\sigma$', self.eig[0].values**0.5)
         # pcv=pcv.T
-        pcv.loc['$\sigma$']=self.eig[0].values**0.5
+        pcv.loc['$\sigma$'] = self.eig[0] ** 0.5
         caption_pcv = pcv.style.set_caption('PC-vecs')
-
-
 
         return """
             <style> div.output_area .rendered_html table {{float:left; margin-right:10px; }}</style>
@@ -159,7 +163,7 @@ class MvGauss:
             pars=caption_pars.render(),
             cov=caption_cov.render(),
             corr=caption_corr.render(),
-            pcv = caption_pcv.render(),
+            pcv=caption_pcv.render(),
         )
 
 
