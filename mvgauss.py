@@ -17,7 +17,7 @@ def _to_dataframe_of_float(df_like):
 
 
 @attrs(frozen=True)
-class MvGauss:
+class MvGauss(object):
     """
     Represents a multivariate Gaussian distribution.
 
@@ -58,6 +58,21 @@ class MvGauss:
         cov = build_covariance_matrix(pars.T.sigma, correlations=corr)
 
         return cls(pars, cov)
+    #
+    # @classmethod
+    # def from_mean_and_covariance(cls, mean, covariance):
+    #     """
+    #     Instantiate from mean co-ordinates and covariance matrix
+    #
+    #     Args:
+    #         mean (iterable): Iterable containing the co-ordinates of the mean
+    #         covariance (dict): e.g. ``{('a','b'): 0.3}``
+    #
+    #     Returns:
+    #         MVGauss
+    #     """
+
+        # return cls(pars, cov)
 
     @property
     def corr(self):
@@ -129,6 +144,10 @@ class MvGauss:
 
         """
         return self.pars.T.mu
+
+    @property
+    def ndim(self):
+        return len(self.mu)
 
     @property
     def sigma(self):

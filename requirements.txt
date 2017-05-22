@@ -2,4 +2,8 @@ attrs
 jupyter
 matplotlib
 pandas
+parmap
 scipy
+scikit-learn
+
+

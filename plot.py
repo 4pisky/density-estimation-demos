@@ -36,14 +36,20 @@ def get_2d_confidence_ellipse(mvgauss, confidence=0.95):
     Returns:
         matplotlib.patches.Ellipse: The ellipse bounding the confidence region.
     """
+    # A useful refererence:
+    # http://www.visiondummy.com/2014/04/draw-error-ellipse-representing-covariance-matrix/
     if len(mvgauss.mu)!=2:
         raise ValueError("Can only get confidence ellipse for 2-d Gaussian.")
         # Might implement ellipsoids / projections at some point in the future
-    chisq = scipy.stats.chi2(df=2).isf(1. - confidence)
+    # Invert the CDF at ``confidence`` to get the chisq value.
+    chisq = scipy.stats.chi2(df=2).ppf(confidence)
+    # print("PPF Chisq:", chisq)
+    # chisq = scipy.stats.chi2(df=2).isf(1. - confidence)
+    # print("ISF Chisq:", chisq)
     chi = chisq**0.5
-    eval, evec = mvgauss.eig
-    rotated_std_dev = eval**0.5
-    rotation_angle = np.rad2deg(np.arctan2(evec[0][1],evec[0][0]))
+    eigval, eigvec = mvgauss.eig
+    rotated_std_dev = eigval**0.5
+    rotation_angle = np.rad2deg(np.arctan2(eigvec[0][1],eigvec[0][0]))
 
     ell = Ellipse(mvgauss.mu,
                   2*chi*rotated_std_dev[0],

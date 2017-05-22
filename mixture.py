@@ -16,8 +16,17 @@ def _validate_weights(instance, attribute, value):
     if len(value) != len(instance.models):
         raise ValueError("Weights vector does not match number of models")
 
+def _validate_models(instance, attribute, value):
+    model_list = value
+    ndim0 = model_list[0].ndim
+    for model in model_list:
+        if model.ndim != ndim0:
+            raise ValueError(
+                "Models of different dimensionality supplied")
+
+
 @attrs
-class Mixture:
+class Mixture(object):
     """
     Represents a mixture model
 
@@ -41,14 +50,18 @@ class Mixture:
         return jpdf
 
 
-    def joint_sample(self, size):
+    def joint_sample(self, size, shuffle=True):
         component_sample_sizes = np.random.multinomial(n=size,
                                                        pvals=self.weights)
         component_samples = []
         for idx in range(len(self.models)):
             sample = self.models[idx].dist.rvs(component_sample_sizes[idx])
             component_samples.append(sample)
-        return np.vstack(component_samples)
+        mixture_sample = np.concatenate(component_samples)
+        if shuffle:
+            np.random.shuffle(mixture_sample)
+        return mixture_sample
+
 
 
     def _repr_html_(self):
@@ -65,3 +78,7 @@ class Mixture:
                            model = mdl._repr_html_())
             )
         return '\n'.join(output)
+
+    @property
+    def ndim(self):
+        return self.models[0].ndim
